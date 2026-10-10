@@ -1,4 +1,5 @@
-import json, random
+import json
+import random
 
 with open('/nfs/roberts/pi/pi_aw989/rjg73/data/tigers_detection/frame_to_sequence_map_v3.json') as f:
     mapping = json.load(f)

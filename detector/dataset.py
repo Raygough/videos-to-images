@@ -13,12 +13,14 @@ python prepare_detection_dataset.py \
     --val_fraction 0.2 \
     --seed 42
 """
+import argparse
 import os
+import random
 import re
 import shutil
 import zipfile
-import argparse
-import random
+
+from frametools import parse_yaml_names
 
 
 def extract_job_id(zip_path):
@@ -40,25 +42,8 @@ def find_data_yaml_class_names(extract_to):
     since these files are small and simply formatted.
     '''
     yaml_path = os.path.join(extract_to, 'data.yaml')
-    names = {}
     with open(yaml_path, 'r') as f:
-        lines = f.readlines()
-
-    in_names_block = False
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith('names:'):
-            in_names_block = True
-            continue
-        if in_names_block:
-            # Lines like "  0: Home"
-            m = re.match(r'(\d+):\s*(.+)', stripped)
-            if m:
-                names[int(m.group(1))] = m.group(2)
-            else:
-                # Reached end of names block
-                break
-    return names
+        return parse_yaml_names(f)
 
 
 def copy_job_frames(job_id, extract_to, images_out_dir, labels_out_dir):

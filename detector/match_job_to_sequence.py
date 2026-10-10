@@ -13,27 +13,13 @@ Usage:
         --output_path /nfs/roberts/pi/pi_aw989/rjg73/data/tigers_detection/job_to_sequence_map.json \
         --n_samples_per_job 8
 """
-import os
-import re
-import json
-import random
 import argparse
+import json
+import os
+import random
 from collections import Counter
-from PIL import Image
 
-
-def average_hash(image_path, hash_size=16):
-    img = Image.open(image_path).convert('L').resize(
-        (hash_size, hash_size), Image.LANCZOS)
-    pixels = list(img.getdata())
-    avg = sum(pixels) / len(pixels)
-
-    bits = 0
-    for i, p in enumerate(pixels):
-        if p > avg:
-            bits |= (1 << i)
-
-    return hex(bits)
+from frametools import average_hash, find_nearest_hash
 
 
 def hamming_distance_hex(h1, h2):
@@ -46,23 +32,10 @@ def find_best_sequence_match(frame_hash, index, max_hamming_distance=10):
     back to brute-force nearest neighbor by hamming distance across the
     whole index (slow, but only triggered on a miss).
     '''
-    if frame_hash in index:
-        # Exact match -- take the first (sequence_id, frame_filename) entry
-        seq_id, _ = index[frame_hash][0]
-        return seq_id, 0
-
-    best_seq_id = None
-    best_distance = None
-    for candidate_hash, entries in index.items():
-        d = hamming_distance_hex(frame_hash, candidate_hash)
-        if best_distance is None or d < best_distance:
-            best_distance = d
-            best_seq_id = entries[0][0]
-
-    if best_distance is not None and best_distance <= max_hamming_distance:
-        return best_seq_id, best_distance
-
-    return None, None
+    entry, distance = find_nearest_hash(frame_hash, index, max_hamming_distance)
+    if entry is None:
+        return None, None
+    return entry[0], distance  # sequence_id, hamming distance
 
 
 def main():

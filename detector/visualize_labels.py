@@ -3,30 +3,12 @@ Draws YOLO-format bounding boxes onto sample images to visually
 confirm labels actually align with the players/objects in the frame,
 rather than trusting the raw label numbers.
 """
+import argparse
 import os
 import random
-import argparse
-from PIL import Image, ImageDraw, ImageFont
 
-
-def read_yaml_class_names(data_yaml_path):
-    names = {}
-    with open(data_yaml_path, 'r') as f:
-        lines = f.readlines()
-
-    in_names_block = False
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith('names:'):
-            in_names_block = True
-            continue
-        if in_names_block:
-            parts = stripped.split(':', 1)
-            if len(parts) == 2 and parts[0].strip().isdigit():
-                names[int(parts[0].strip())] = parts[1].strip()
-            else:
-                break
-    return names
+from frametools import read_yaml_class_names
+from PIL import Image, ImageDraw
 
 
 def draw_boxes_on_image(image_path, label_path, class_names):

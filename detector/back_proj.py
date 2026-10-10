@@ -1,6 +1,8 @@
 '''
 Script to train and test detector model on frames1
 '''
+import numpy as np
+
 
 def backproject(depth, intrinsics):
     #depth are of H x W
