@@ -13,28 +13,11 @@ Usage:
         --frames_dir /nfs/roberts/pi/pi_aw989/rjg73/frames \
         --output_path /nfs/roberts/pi/pi_aw989/rjg73/data/tigers_detection/frame_hash_index.json
 """
-import os
-import json
 import argparse
-from PIL import Image
+import json
+import os
 
-
-def average_hash(image_path, hash_size=16):
-    '''
-    Computes a simple average hash of an image as a hex string.
-    Resize -> grayscale -> compare each pixel to the mean -> pack bits.
-    '''
-    img = Image.open(image_path).convert('L').resize(
-        (hash_size, hash_size), Image.LANCZOS)
-    pixels = list(img.getdata())
-    avg = sum(pixels) / len(pixels)
-
-    bits = 0
-    for i, p in enumerate(pixels):
-        if p > avg:
-            bits |= (1 << i)
-
-    return hex(bits)
+from frametools import average_hash
 
 
 def main():

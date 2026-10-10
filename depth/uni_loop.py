@@ -1,11 +1,10 @@
-import os
-import json
 import argparse
+import json
+import os
 
 import numpy as np
 import torch
 from PIL import Image
-
 from unidepth.models import UniDepthV2
 
 

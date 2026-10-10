@@ -15,59 +15,28 @@ Usage:
         --output_path /nfs/roberts/pi/pi_aw989/rjg73/data/tigers_detection/frame_to_sequence_map_v3.json \
         --search_window 200
 """
-import os
-import re
-import json
 import argparse
-import numpy as np
-from PIL import Image
+import json
+import os
 from collections import defaultdict
 
-
-def average_hash(image_path, hash_size=16):
-    img = Image.open(image_path).convert('L').resize(
-        (hash_size, hash_size), Image.LANCZOS)
-    pixels = list(img.getdata())
-    avg = sum(pixels) / len(pixels)
-    bits = 0
-    for i, p in enumerate(pixels):
-        if p > avg:
-            bits |= (1 << i)
-    return hex(bits)
-
-
-def hamming_distance_hex(h1, h2):
-    return bin(int(h1, 16) ^ int(h2, 16)).count('1')
+import numpy as np
+from frametools import average_hash, extract_frame_number, find_nearest_hash
 
 
 def load_small_color_array(image_path, size=96):
-    img = Image.open(image_path).convert('RGB').resize((size, size), Image.LANCZOS)
+    from PIL import Image  # local import keeps the module import-light
+
+    resample = getattr(Image.Resampling, "LANCZOS", None) or Image.LANCZOS
+    img = Image.open(image_path).convert('RGB').resize((size, size), resample)
     return np.asarray(img, dtype=np.float32)
 
 
-def extract_frame_number(filename):
-    match = re.search(r'(\d+)', filename)
-    return int(match.group(1)) if match else None
-
-
 def find_candidate_sequence(frame_hash, index, max_hamming_distance=15):
-    if frame_hash in index:
-        seq_id, source_fname = index[frame_hash][0]
-        return seq_id, source_fname, 0
-
-    best_seq_id = None
-    best_fname = None
-    best_distance = None
-    for candidate_hash, entries in index.items():
-        d = hamming_distance_hex(frame_hash, candidate_hash)
-        if best_distance is None or d < best_distance:
-            best_distance = d
-            best_seq_id, best_fname = entries[0]
-
-    if best_distance is not None and best_distance <= max_hamming_distance:
-        return best_seq_id, best_fname, best_distance
-
-    return None, None, None
+    entry, distance = find_nearest_hash(frame_hash, index, max_hamming_distance)
+    if entry is None:
+        return None, None, None
+    return entry[0], entry[1], distance  # seq_id, source_fname, distance
 
 
 def main():

@@ -5,9 +5,9 @@ Second, Third, Player, Ignore) down to a single-class Player-only dataset.
 Keeps only label lines with class_id == 4 (Player), remaps them to class_id 0,
 and copies images unchanged (images don't need to change, only labels).
 """
+import argparse
 import os
 import shutil
-import argparse
 
 
 def filter_split(images_in_dir, labels_in_dir, images_out_dir, labels_out_dir,

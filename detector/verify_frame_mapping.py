@@ -14,11 +14,12 @@ Usage:
         --output_dir /nfs/roberts/pi/pi_aw989/rjg73/data/tigers_detection/mapping_spot_check \
         --n_samples_per_bucket 4
 """
-import os
-import json
-import random
 import argparse
+import json
+import os
+import random
 from collections import Counter
+
 from PIL import Image
 
 
